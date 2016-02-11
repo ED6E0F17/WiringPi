@@ -37,7 +37,7 @@ DYNAMIC=libwiringPiDev.so.$(VERSION)
 #DEBUG	= -g -O0
 DEBUG	= -O2
 CC	= gcc
-INCLUDE	= -I.
+INCLUDE	= -I. -I../wiringPi
 DEFS	= -D_GNU_SOURCE
 CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
 
@@ -91,8 +91,7 @@ install:	$(DYNAMIC)
 	$Q echo "[Install Dynamic Lib]"
 	$Q install -m 0755 -d						$(DESTDIR)$(PREFIX)/lib
 	$Q install -m 0755 libwiringPiDev.so.$(VERSION)			$(DESTDIR)$(PREFIX)/lib/libwiringPiDev.so.$(VERSION)
-	$Q ln -sf $(DESTDIR)$(PREFIX)/lib/libwiringPiDev.so.$(VERSION)	$(DESTDIR)/lib/libwiringPiDev.so
-	$Q $(LDCONFIG)
+	$Q ln -sf --relative $(DESTDIR)$(PREFIX)/lib/libwiringPiDev.so.$(VERSION)	$(DESTDIR)/lib/libwiringPiDev.so
 
 .PHONY:	install-static
 install-static:	$(STATIC)
@@ -118,7 +117,6 @@ uninstall:
 	$Q echo "[UnInstall]"
 	$Q cd $(DESTDIR)$(PREFIX)/include/ && rm -f $(HEADERS)
 	$Q cd $(DESTDIR)$(PREFIX)/lib/     && rm -f libwiringPiDev.*
-	$Q $(LDCONFIG)
 
 
 .PHONY:	depend
