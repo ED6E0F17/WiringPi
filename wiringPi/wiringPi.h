@@ -24,6 +24,7 @@
 #ifndef	__WIRING_PI_H__
 #define	__WIRING_PI_H__
 
+#include <stdint.h>
 // C doesn't have true/false by default and I can never remember which
 //	way round they are, so ...
 //	(and yes, I know about stdbool.h but I like capitals for these and I'm old)
@@ -143,10 +144,10 @@ struct wiringPiNodeStruct
   int     pinMax ;
 
   int          fd ;	// Node specific
-  unsigned int data0 ;	//  ditto
-  unsigned int data1 ;	//  ditto
-  unsigned int data2 ;	//  ditto
-  unsigned int data3 ;	//  ditto
+  uintptr_t data0 ;	//  ditto
+  uintptr_t data1 ;	//  ditto
+  uintptr_t data2 ;	//  ditto
+  uintptr_t data3 ;	//  ditto
 
            void   (*pinMode)          (struct wiringPiNodeStruct *node, int pin, int mode) ;
            void   (*pullUpDnControl)  (struct wiringPiNodeStruct *node, int pin, int mode) ;

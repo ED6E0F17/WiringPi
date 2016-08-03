@@ -24,7 +24,8 @@
 VERSION=$(shell cat ../VERSION)
 DESTDIR?=/usr
 PREFIX?=/local
-
+CXX?=g++
+CC?=clang
 LDCONFIG?=ldconfig
 
 ifneq ($V,1)
@@ -36,11 +37,10 @@ DYNAMIC=libwiringPi.so.$(VERSION)
 
 #DEBUG	= -g -O0
 DEBUG	= -O2
-CC	= gcc
-INCLUDE	= -I.
+KPATH   = ${ANDROID_BUILD_TOP}/bionic/libc/kernel
+INCLUDE	= -I. -I${KPATH}/../include/ -I${KPATH}/uapi/ -I${KPATH}/uapi/asm-${ARCH}/ -I${KPATH}/android/uapi/
 DEFS	= -D_GNU_SOURCE
-CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Wextra -Winline $(INCLUDE) -pipe -fPIC
-#CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Wextra -Wconversion -Winline $(INCLUDE) -pipe -fPIC
+CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline -Wno-unused-result -Wno-attributes $(INCLUDE) -pthread -pipe -fPIC
 
 LIBS    = -lm -lpthread -lrt -lcrypt
 
@@ -50,7 +50,6 @@ SRC	=	wiringPi.c						\
 		wiringSerial.c wiringShift.c				\
 		piHiPri.c piThread.c					\
 		wiringPiSPI.c wiringPiI2C.c				\
-		softPwm.c softTone.c					\
 		mcp23008.c mcp23016.c mcp23017.c			\
 		mcp23s08.c mcp23s17.c					\
 		sr595.c							\
@@ -75,7 +74,7 @@ static:
 
 $(DYNAMIC):	$(OBJ)
 	$Q echo "[Link (Dynamic)]"
-	$Q $(CC) -shared -Wl,-soname,libwiringPi.so$(WIRINGPI_SONAME_SUFFIX) -o libwiringPi.so.$(VERSION) $(LIBS) $(OBJ)
+	$Q $(CC) -shared -Wl,-soname,libwiringPi.so$(WIRINGPI_SONAME_SUFFIX) -o libwiringPi.so.$(VERSION) $(OBJ)
 
 .c.o:
 	$Q echo [Compile] $<
@@ -101,8 +100,7 @@ install:	$(DYNAMIC)
 	$Q echo "[Install Dynamic Lib]"
 	$Q install -m 0755 -d						$(DESTDIR)$(PREFIX)/lib
 	$Q install -m 0755 libwiringPi.so.$(VERSION)			$(DESTDIR)$(PREFIX)/lib/libwiringPi.so.$(VERSION)
-	$Q ln -sf $(DESTDIR)$(PREFIX)/lib/libwiringPi.so.$(VERSION)	$(DESTDIR)/lib/libwiringPi.so
-	$Q $(LDCONFIG)
+	$Q ln -sf --relative $(DESTDIR)$(PREFIX)/lib/libwiringPi.so.$(VERSION)	$(DESTDIR)/lib/libwiringPi.so
 
 .PHONY:	install-deb
 install-deb:	$(DYNAMIC)
@@ -119,7 +117,6 @@ uninstall:
 	$Q echo "[UnInstall]"
 	$Q cd $(DESTDIR)$(PREFIX)/include/ && rm -f $(HEADERS)
 	$Q cd $(DESTDIR)$(PREFIX)/lib/     && rm -f libwiringPi.*
-	$Q $(LDCONFIG)
 
 
 .PHONY:	depend
@@ -128,15 +125,13 @@ depend:
 
 # DO NOT DELETE
 
-wiringPi.o: softPwm.h softTone.h wiringPi.h ../version.h
+wiringPi.o: wiringPi.h ../version.h
 wiringSerial.o: wiringSerial.h
 wiringShift.o: wiringPi.h wiringShift.h
 piHiPri.o: wiringPi.h
 piThread.o: wiringPi.h
 wiringPiSPI.o: wiringPi.h wiringPiSPI.h
 wiringPiI2C.o: wiringPi.h wiringPiI2C.h
-softPwm.o: wiringPi.h softPwm.h
-softTone.o: wiringPi.h softTone.h
 mcp23008.o: wiringPi.h wiringPiI2C.h mcp23x0817.h mcp23008.h
 mcp23016.o: wiringPi.h wiringPiI2C.h mcp23016.h mcp23016reg.h
 mcp23017.o: wiringPi.h wiringPiI2C.h mcp23x0817.h mcp23017.h

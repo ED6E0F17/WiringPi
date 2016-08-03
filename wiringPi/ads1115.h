@@ -48,6 +48,14 @@
 extern "C" {
 #endif
 
+#define localswap_16(x) \
+({ \
+	uint16_t __x = (x); \
+	((uint16_t)( \
+		(((uint16_t)(__x) & (uint16_t)0x00ffU) << 8) | \
+		(((uint16_t)(__x) & (uint16_t)0xff00U) >> 8) )); \
+})
+
 extern int ads1115Setup (int pinBase, int i2cAddress) ;
 
 #ifdef __cplusplus

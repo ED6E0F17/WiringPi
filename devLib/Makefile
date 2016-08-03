@@ -24,7 +24,8 @@
 VERSION=$(shell cat ../VERSION)
 DESTDIR?=/usr
 PREFIX?=/local
-
+CXX?=g++
+CC?=clang
 LDCONFIG?=ldconfig
 
 ifneq ($V,1)
@@ -36,10 +37,10 @@ DYNAMIC=libwiringPiDev.so.$(VERSION)
 
 #DEBUG	= -g -O0
 DEBUG	= -O2
-CC	= gcc
-INCLUDE	= -I.
+KPATH   = ${ANDROID_BUILD_TOP}/bionic/libc/kernel
+INCLUDE	= -I. -I../wiringPi -I${KPATH}/../include/ -I${KPATH}/uapi/ -I${KPATH}/uapi/asm-${ARCH}/ -I${KPATH}/android/uapi/
 DEFS	= -D_GNU_SOURCE
-CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
+CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline -Wno-attributes $(INCLUDE) -pthread -pipe -fPIC
 
 LIBS    =
 
@@ -68,7 +69,7 @@ $(STATIC):	$(OBJ)
 
 $(DYNAMIC):	$(OBJ)
 	$Q echo "[Link (Dynamic)]"
-	$Q $(CC) -shared -Wl,-soname,libwiringPiDev.so$(WIRINGPI_SONAME_SUFFIX) -o libwiringPiDev.so.$(VERSION) -lpthread $(OBJ)
+	$Q $(CC) -shared -Wl,-soname,libwiringPiDev.so$(WIRINGPI_SONAME_SUFFIX) -o libwiringPiDev.so.$(VERSION)  $(OBJ)
 
 .c.o:
 	$Q echo [Compile] $<
@@ -93,8 +94,7 @@ install:	$(DYNAMIC)
 	$Q echo "[Install Dynamic Lib]"
 	$Q install -m 0755 -d						$(DESTDIR)$(PREFIX)/lib
 	$Q install -m 0755 libwiringPiDev.so.$(VERSION)			$(DESTDIR)$(PREFIX)/lib/libwiringPiDev.so.$(VERSION)
-	$Q ln -sf $(DESTDIR)$(PREFIX)/lib/libwiringPiDev.so.$(VERSION)	$(DESTDIR)/lib/libwiringPiDev.so
-	$Q $(LDCONFIG)
+	$Q ln -sf --relative $(DESTDIR)$(PREFIX)/lib/libwiringPiDev.so.$(VERSION)	$(DESTDIR)/lib/libwiringPiDev.so
 
 .PHONY:	install-static
 install-static:	$(STATIC)
@@ -120,7 +120,6 @@ uninstall:
 	$Q echo "[UnInstall]"
 	$Q cd $(DESTDIR)$(PREFIX)/include/ && rm -f $(HEADERS)
 	$Q cd $(DESTDIR)$(PREFIX)/lib/     && rm -f libwiringPiDev.*
-	$Q $(LDCONFIG)
 
 
 .PHONY:	depend

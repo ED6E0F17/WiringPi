@@ -22,7 +22,6 @@
  ***********************************************************************
  */
 
-#include <byteswap.h>
 #include <stdint.h>
 
 #include <wiringPi.h>
@@ -38,7 +37,7 @@ static int myAnalogRead (struct wiringPiNodeStruct *node, int pin)
 
   wiringPiSPIDataRW (node->fd, (unsigned char *)&spiData, 4) ;
 
-  spiData = __bswap_32(spiData) ;
+  spiData = localswap_32(spiData) ;
 
   switch (chan)
   {

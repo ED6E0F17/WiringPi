@@ -238,6 +238,7 @@ static void doLoad (int argc, char *argv [])
   char cmd [80] ;
   char *file1, *file2 ;
   char args1 [32], args2 [32] ;
+  int unused = 0;
 
   checkDevTree (argv) ;
 
@@ -280,13 +281,13 @@ static void doLoad (int argc, char *argv [])
   if (!moduleLoaded (module1))
   {
     sprintf (cmd, "%s %s%s", findExecutable (MODPROBE), module1, args1) ;
-    system (cmd) ;
+    unused += system (cmd) ;
   }
 
   if (!moduleLoaded (module2))
   {
     sprintf (cmd, "%s %s%s", findExecutable (MODPROBE), module2, args2) ;
-    system (cmd) ;
+    unused += system (cmd) ;
   }
 
   if (!moduleLoaded (module2))
@@ -318,6 +319,7 @@ static void doUnLoad (int argc, char *argv [])
 {
   char *module1, *module2 ;
   char cmd [80] ;
+  int unused = 0;
 
   checkDevTree (argv) ;
 
@@ -340,13 +342,13 @@ static void doUnLoad (int argc, char *argv [])
   if (moduleLoaded (module1))
   {
     sprintf (cmd, "%s %s", findExecutable (RMMOD), module1) ;
-    system (cmd) ;
+    unused += system (cmd) ;
   }
 
   if (moduleLoaded (module2))
   {
     sprintf (cmd, "%s %s", findExecutable (RMMOD), module2) ;
-    system (cmd) ;
+    unused += system (cmd) ;
   }
 }
 
@@ -1263,6 +1265,7 @@ static void doVersion (char *argv [])
   struct stat statBuf ;
   char name [80] ;
   FILE *fd ;
+  char* unused;
 
   int vMaj, vMin ;
 
@@ -1287,9 +1290,10 @@ static void doVersion (char *argv [])
   {
     if ((fd = fopen ("/proc/device-tree/model", "r")) != NULL)
     {
-      fgets (name, 80, fd) ;
+      unused = fgets (name, 80, fd) ;
       fclose (fd) ;
       printf ("  *--> %s\n", name) ;
+      unused += 0;
     }
   }
 

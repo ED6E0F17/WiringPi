@@ -86,7 +86,7 @@ int pseudoPinsSetup (const int pinBase)
 
   ptr = mmap (NULL, PSEUDO_PINS * sizeof (int), PROT_READ | PROT_WRITE, MAP_SHARED, node->fd, 0) ;
 
-  node->data0 = (unsigned int)ptr ;
+  node->data0 = (uintptr_t)ptr ;
 
   node->analogRead  = myAnalogRead ;
   node->analogWrite = myAnalogWrite ;

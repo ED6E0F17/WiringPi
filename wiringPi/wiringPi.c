@@ -71,9 +71,6 @@
 #include <sys/ioctl.h>
 #include <asm/ioctl.h>
 
-#include "softPwm.h"
-#include "softTone.h"
-
 #include "wiringPi.h"
 #include "../version.h"
 
@@ -1425,9 +1422,6 @@ void pinMode (int pin, int mode)
     else if (wiringPiMode != WPI_MODE_GPIO)
       return ;
 
-    softPwmStop  (origPin) ;
-    softToneStop (origPin) ;
-
     fSel    = gpioToGPFSEL [pin] ;
     shift   = gpioToShift  [pin] ;
 
@@ -1435,10 +1429,6 @@ void pinMode (int pin, int mode)
       *(gpio + fSel) = (*(gpio + fSel) & ~(7 << shift)) ; // Sets bits to zero = input
     else if (mode == OUTPUT)
       *(gpio + fSel) = (*(gpio + fSel) & ~(7 << shift)) | (1 << shift) ;
-    else if (mode == SOFT_PWM_OUTPUT)
-      softPwmCreate (origPin, 0, 100) ;
-    else if (mode == SOFT_TONE_OUTPUT)
-      softToneCreate (origPin) ;
     else if (mode == PWM_TONE_OUTPUT)
     {
       pinMode (origPin, PWM_OUTPUT) ;	// Call myself to enable PWM mode
