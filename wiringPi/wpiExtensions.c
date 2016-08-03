@@ -382,7 +382,7 @@ static int doExtensionPcf8574 (char *progName, int pinBase, char *params)
  *	ads1115:base:i2cAddr
  *********************************************************************************
  */
-
+#if 0
 static int doExtensionAds1115 (char *progName, int pinBase, char *params)
 {
   int i2c ;
@@ -400,7 +400,7 @@ static int doExtensionAds1115 (char *progName, int pinBase, char *params)
 
   return TRUE ;
 }
-
+#endif
 
 /*
  * doExtensionPcf8591:
@@ -434,7 +434,7 @@ static int doExtensionPcf8591 (char *progName, int pinBase, char *params)
  *	max31855:base:spiChan
  *********************************************************************************
  */
-
+#if 0
 static int doExtensionMax31855 (char *progName, int pinBase, char *params)
 {
   int spi ;
@@ -452,7 +452,7 @@ static int doExtensionMax31855 (char *progName, int pinBase, char *params)
 
   return TRUE ;
 }
-
+#endif
 
 /*
  * doExtensionMcp3002:
@@ -681,8 +681,8 @@ static struct extensionFunctionStruct extensionFunctions [] =
   { "mcp3004",		&doExtensionMcp3004	},
   { "mcp4802",		&doExtensionMcp4802	},
   { "mcp3422",		&doExtensionMcp3422	},
-  { "max31855",		&doExtensionMax31855	},
-  { "ads1115",		&doExtensionAds1115	},
+//  { "max31855",		&doExtensionMax31855	},
+//  { "ads1115",		&doExtensionAds1115	},
   { "max5322",		&doExtensionMax5322	},
   { "sn3218",		&doExtensionSn3218	},
   { "drcs",		&doExtensionDrcS	},

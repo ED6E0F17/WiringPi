@@ -24,7 +24,8 @@
 VERSION=$(shell cat ../VERSION)
 DESTDIR?=/usr
 PREFIX?=/local
-
+CXX?=g++
+CC?=clang
 LDCONFIG?=ldconfig
 
 ifneq ($V,1)
@@ -36,8 +37,8 @@ DYNAMIC=libwiringPi.so.$(VERSION)
 
 #DEBUG	= -g -O0
 DEBUG	= -O2
-CC	= gcc
-INCLUDE	= -I.
+KPATH   = ${ANDROID_BUILD_TOP}/bionic/libc/kernel
+INCLUDE	= -I. -I${KPATH}/../include/ -I${KPATH}/uapi/ -I${KPATH}/uapi/asm-${ARCH}/ -I${KPATH}/android/uapi/
 DEFS	= -D_GNU_SOURCE
 CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline $(INCLUDE) -pipe -fPIC
 
@@ -49,29 +50,25 @@ SRC	=	wiringPi.c						\
 		wiringSerial.c wiringShift.c				\
 		piHiPri.c piThread.c					\
 		wiringPiSPI.c wiringPiI2C.c				\
-		softPwm.c softTone.c					\
 		mcp23008.c mcp23016.c mcp23017.c			\
 		mcp23s08.c mcp23s17.c					\
 		sr595.c							\
 		pcf8574.c pcf8591.c					\
 		mcp3002.c mcp3004.c mcp4802.c mcp3422.c			\
-		max31855.c max5322.c ads1115.c				\
-		sn3218.c						\
-		drcSerial.c						\
+		max5322.c						\
+		sn3218.c drcSerial.c					\
 		wpiExtensions.c
 
 HEADERS =	wiringPi.h						\
 		wiringSerial.h wiringShift.h				\
 		wiringPiSPI.h wiringPiI2C.h				\
-		softPwm.h softTone.h					\
 		mcp23008.h mcp23016.h mcp23017.h			\
 		mcp23s08.h mcp23s17.h					\
 		sr595.h							\
 		pcf8574.h pcf8591.h					\
 		mcp3002.h mcp3004.h mcp4802.h mcp3422.h			\
-		max31855.h max5322.h ads1115.h				\
-		sn3218.h						\
-		drcSerial.h						\
+		max5322.c						\
+		sn3218.h drcSerial.h					\
 		wpiExtensions.h 
 
 
@@ -89,7 +86,7 @@ $(STATIC):	$(OBJ)
 
 $(DYNAMIC):	$(OBJ)
 	$Q echo "[Link (Dynamic)]"
-	$Q $(CC) -shared -Wl,-soname,libwiringPi.so$(WIRINGPI_SONAME_SUFFIX) -o libwiringPi.so.$(VERSION) -lpthread $(OBJ)
+	$Q $(CC) -shared -Wl,-soname,libwiringPi.so$(WIRINGPI_SONAME_SUFFIX) -o libwiringPi.so.$(VERSION) $(OBJ)
 
 .c.o:
 	$Q echo [Compile] $<
@@ -115,8 +112,7 @@ install:	$(DYNAMIC)
 	$Q echo "[Install Dynamic Lib]"
 	$Q install -m 0755 -d						$(DESTDIR)$(PREFIX)/lib
 	$Q install -m 0755 libwiringPi.so.$(VERSION)			$(DESTDIR)$(PREFIX)/lib/libwiringPi.so.$(VERSION)
-	$Q ln -sf $(DESTDIR)$(PREFIX)/lib/libwiringPi.so.$(VERSION)	$(DESTDIR)/lib/libwiringPi.so
-	$Q $(LDCONFIG)
+	$Q ln -sf --relative $(DESTDIR)$(PREFIX)/lib/libwiringPi.so.$(VERSION)	$(DESTDIR)/lib/libwiringPi.so
 
 .PHONY:	install-static
 install-static:	$(STATIC)
@@ -142,7 +138,6 @@ uninstall:
 	$Q echo "[UnInstall]"
 	$Q cd $(DESTDIR)$(PREFIX)/include/ && rm -f $(HEADERS)
 	$Q cd $(DESTDIR)$(PREFIX)/lib/     && rm -f libwiringPi.*
-	$Q $(LDCONFIG)
 
 
 .PHONY:	depend
@@ -151,15 +146,13 @@ depend:
 
 # DO NOT DELETE
 
-wiringPi.o: softPwm.h softTone.h wiringPi.h
+wiringPi.o: wiringPi.h
 wiringSerial.o: wiringSerial.h
 wiringShift.o: wiringPi.h wiringShift.h
-piHiPri.o: wiringPi.h
 piThread.o: wiringPi.h
+piHiPri.o: wiringPi.h
 wiringPiSPI.o: wiringPi.h wiringPiSPI.h
 wiringPiI2C.o: wiringPi.h wiringPiI2C.h
-softPwm.o: wiringPi.h softPwm.h
-softTone.o: wiringPi.h softTone.h
 mcp23008.o: wiringPi.h wiringPiI2C.h mcp23x0817.h mcp23008.h
 mcp23016.o: wiringPi.h wiringPiI2C.h mcp23016.h mcp23016reg.h
 mcp23017.o: wiringPi.h wiringPiI2C.h mcp23x0817.h mcp23017.h
@@ -172,11 +165,11 @@ mcp3002.o: wiringPi.h wiringPiSPI.h mcp3002.h
 mcp3004.o: wiringPi.h wiringPiSPI.h mcp3004.h
 mcp4802.o: wiringPi.h wiringPiSPI.h mcp4802.h
 mcp3422.o: wiringPi.h wiringPiI2C.h mcp3422.h
-max31855.o: wiringPi.h wiringPiSPI.h max31855.h
 max5322.o: wiringPi.h wiringPiSPI.h max5322.h
 sn3218.o: wiringPi.h wiringPiI2C.h sn3218.h
 drcSerial.o: wiringPi.h wiringSerial.h drcSerial.h
+max31855.o: wiringPi.h wiringPiSPI.h max31855.h
 wpiExtensions.o: wiringPi.h mcp23008.h mcp23016.h mcp23017.h mcp23s08.h
 wpiExtensions.o: mcp23s17.h sr595.h pcf8574.h pcf8591.h mcp3002.h mcp3004.h
-wpiExtensions.o: mcp4802.h mcp3422.h max31855.h max5322.h sn3218.h
+wpiExtensions.o: mcp4802.h mcp3422.h  max5322.h sn3218.h
 wpiExtensions.o: drcSerial.h wpiExtensions.h
