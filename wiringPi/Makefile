@@ -39,7 +39,7 @@ DYNAMIC=libwiringPi.so.$(VERSION)
 DEBUG	= -O2
 KPATH   = ${ANDROID_BUILD_TOP}/bionic/libc/kernel
 INCLUDE	= -I. -I${KPATH}/../include/ -I${KPATH}/uapi/ -I${KPATH}/uapi/asm-${ARCH}/ -I${KPATH}/android/uapi/
-DEFS	= -D_GNU_SOURCE
+DEFS	= -D_GNU_SOURCE -DOLD_WAY
 CFLAGS	= $(DEBUG) $(DEFS) -Wformat=2 -Wall -Winline -Wno-unused-result -Wno-attributes $(INCLUDE) -pthread -pipe -fPIC
 
 LIBS    = -lm -lpthread -lrt -lcrypt
@@ -57,9 +57,8 @@ SRC	=	wiringPi.c						\
 		mcp3002.c mcp3004.c mcp4802.c mcp3422.c			\
 		max31855.c max5322.c ads1115.c				\
 		sn3218.c						\
-		bmp180.c htu21d.c ds18b20.c rht03.c			\
-		drcSerial.c drcNet.c					\
-		pseudoPins.c						\
+		bmp180.c htu21d.c ds18b20.c				\
+		drcSerial.c rht03.c					\
 		wpiExtensions.c
 
 HEADERS =	$(shell ls *.h)

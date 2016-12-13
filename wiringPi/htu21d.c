@@ -26,7 +26,6 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <math.h>
 
 #include "wiringPi.h"
 #include "wiringPiI2C.h"
@@ -81,7 +80,7 @@ static int myAnalogRead (struct wiringPiNodeStruct *node, int pin)
 
     sTemp = (data [0] << 8) | data [1] ;
     fTemp = -48.85 + 175.72 * (double)sTemp / 63356.0 ;
-    cTemp = (int)rint (((100.0 * fTemp) + 0.5) / 10.0) ;
+    cTemp = (int)(10.0 * fTemp + 0.55) ;
     return cTemp ;
   }
   else if (chan == 1)	// humidity
@@ -103,7 +102,7 @@ static int myAnalogRead (struct wiringPiNodeStruct *node, int pin)
 
     sHumid = (data [0] << 8) | data [1] ;
     fHumid = -6.0 + 125.0 * (double)sHumid / 65536.0 ;
-    cHumid = (int)rint (((100.0 * fHumid) + 0.5) / 10.0) ;
+    cHumid = (int)(10.0 * fHumid + 0.55) ;
     return cHumid ;
   }
   else

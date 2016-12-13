@@ -31,7 +31,6 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <math.h>
 
 #include "wiringPi.h"
 #include "wiringPiI2C.h"
@@ -105,7 +104,7 @@ static void bmp180ReadTempPress (int fd)
 
   a = c5 * (tu - c6) ;
   fTemp = a + (mc / (a + md)) ;
-  cTemp = (int)rint (((100.0 * fTemp) + 0.5) / 10.0) ;
+  cTemp = (int)(10.0 * fTemp + 0.55) ;
 
 #ifdef	DEBUG
   printf ("fTemp: %f, cTemp: %6d\n", fTemp, cTemp) ;
@@ -126,11 +125,11 @@ static void bmp180ReadTempPress (int fd)
 
   pu = ((double)data [0] * 256.0) + (double)data [1] + ((double)data [2] / 256.0) ;
   s = fTemp - 25.0 ;
-  x = (x2 * pow (s, 2.0)) + (x1 * s) + x0 ;
-  y = (yy2 * pow (s, 2.0)) + (yy1 * s) + yy0 ;
+  x = (x2 * s * s) + (x1 * s) + x0 ;
+  y = (yy2 * s * s) + (yy1 * s) + yy0 ;
   z = (pu - x) / y ;
-  fPress = (p2 * pow (z, 2.0)) + (p1 * z) + p0 ;
-  cPress = (int)rint (((100.0 * fPress) + 0.5) / 10.0) ;
+  fPress = (p2 * z * z) + (p1 * z) + p0 ;
+  cPress = (int)(10.0 * fPress + 0.55);
 
 #ifdef	DEBUG
   printf ("fPress: %f, cPress: %6d\n", fPress, cPress) ;
@@ -160,16 +159,17 @@ static void myAnalogWrite (struct wiringPiNodeStruct *node, int pin, int value)
 
 static int myAnalogRead (struct wiringPiNodeStruct *node, int pin)
 {
+  double compensate = 1.0 + (0.02 * altitude / 170);
   int chan = pin - node->pinBase ;
 
   bmp180ReadTempPress (node->fd) ;
 
   /**/ if (chan == 0)	// Read Temperature
     return cTemp ;
-  else if (chan == 1)	// Pressure
+  else if (chan == 1)	// Measured Pressure
     return cPress ;
-  else if (chan == 2)	// Pressure in mB
-    return cPress / pow (1 - ((double)altitude / 44330.0), 5.255) ;
+  else if (chan == 2)	// Estimated Pressure at sea level (drops to 98% at 170m)
+    return (int)(compensate * (double)cPress + 0.5);
   else
     return -9999 ;
 
@@ -215,23 +215,22 @@ int bmp180Setup (const int pinBase)
    MD = read16 (fd, 0xBE) ;
 
 // Calculate coefficients
-
-  c3 = 160.0 * pow (2.0, -15.0) * AC3 ;
-  c4 = pow (10.0, -3.0) * pow(2.0,-15.0) * AC4 ;
-  b1 = pow (160.0, 2.0) * pow(2.0,-30.0) * VB1 ;
-  c5 = (pow (2.0, -15.0) / 160.0) * AC5 ;
-  c6 = AC6 ;
-  mc = (pow (2.0, 11.0) / pow(160.0,2.0)) * MC ;
-  md = MD / 160.0 ;
-  x0 = AC1 ;
-  x1 = 160.0 * pow (2.0, -13.0) * AC2 ;
-  x2 = pow (160.0, 2.0) * pow(2.0,-25.0) * VB2 ;
-  yy0 = c4 * pow (2.0, 15.0) ;
+  c3 = 160.0 *  AC3 / (1<<15);
+  c4 = 1.0e-3 * AC4 / (1<<15);
+  b1 = 160.0 * 160.0 * VB1 / (1<<30);
+  c5 = 1.0 * AC5 / (160.0 * (1<<15)) ;
+  c6 = 1.0 * AC6 ;
+  mc = 1.0 * (1<<11) /(160.0 * 160.0) * MC ;
+  md = 1.0 * MD / 160.0 ;
+  x0 = 1.0 * AC1 ;
+  x1 = 160.0 * AC2 / (1 << 13);
+  x2 = 160.0 * 160.0 * VB2 / (1<<25);
+  yy0 = c4 * (1<<15) ;
   yy1 = c4 * c3 ;
   yy2 = c4 * b1 ;
   p0 = (3791.0 - 8.0) / 1600.0 ;
-  p1 = 1.0 - 7357.0 * pow (2.0, -20.0) ;
-  p2 = 3038.0 * 100.0 * pow (2.0,  -36.0) ;
+  p1 = 1.0 - 7357.0 / (1<<20) ;
+  p2 = 3038.0 * 100.0 / (1.0 * (1<<18) * (1<<18)) ;
 
   return TRUE ;
 }

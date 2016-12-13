@@ -456,6 +456,7 @@ static int doExtensionPcf8591 (char *progName, int pinBase, char *params)
 }
 
 
+#if 0
 /*
  * doExtensionPseudoPins:
  *	64 Memory resident pseudo pins
@@ -469,6 +470,7 @@ static int doExtensionPseudoPins (UNU char *progName, int pinBase, UNU char *par
 
   return TRUE ;
 }
+#endif
 
 
 /*
@@ -776,7 +778,7 @@ static int doExtensionDrcS (char *progName, int pinBase, char *params)
  *	drcn:base:pins:ipAddress:port:password
  *********************************************************************************
  */
-
+#if 0
 static int doExtensionDrcNet (char *progName, int pinBase, char *params)
 {
   int pins ;
@@ -821,7 +823,7 @@ static int doExtensionDrcNet (char *progName, int pinBase, char *params)
 
   return drcSetupNet (pinBase, pins, ipAddress, port, password) ;
 }
-
+#endif
 
 
 /*
@@ -840,7 +842,6 @@ static struct extensionFunctionStruct extensionFunctions [] =
   { "pcf8574",		&doExtensionPcf8574	},
   { "pcf8591",		&doExtensionPcf8591	},
   { "bmp180",		&doExtensionBmp180	},
-  { "pseudoPins",	&doExtensionPseudoPins	},
   { "htu21d",		&doExtensionHtu21d	},
   { "ds18b20",		&doExtensionDs18b20	},
   { "rht03",		&doExtensionRht03	},
@@ -853,7 +854,6 @@ static struct extensionFunctionStruct extensionFunctions [] =
   { "max5322",		&doExtensionMax5322	},
   { "sn3218",		&doExtensionSn3218	},
   { "drcs",		&doExtensionDrcS	},
-  { "drcn",		&doExtensionDrcNet	},
   { NULL,		NULL		 	},
 } ;
 
