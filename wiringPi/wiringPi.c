@@ -733,6 +733,10 @@ int piGpioLayout (void)
   char *c ;
   static int  gpioLayout = -1 ;
 
+#ifdef __aarch64__
+  return 2; // no info in /proc/cpu, assume b+ layout
+#endif
+
   if (gpioLayout != -1)	// No point checking twice
     return gpioLayout ;
 
@@ -937,14 +941,15 @@ int piBoardRev (void)
 
 void piBoardId (int *model, int *rev, int *mem, int *maker, int *warranty)
 {
-  FILE *cpuFd ;
-  char line [120] ;
   char *c ;
   unsigned int revision ;
   int bRev, bType, bProc, bMfg, bMem, bWarranty ;
 
-//	Will deal with the properly later on - for now, lets just get it going...
-//  unsigned int modelNum ;
+#ifdef __aarch64__
+  revision = (unsigned int)0xa020d3; // ?? is this a Pi3 ??
+#else
+  FILE *cpuFd ;
+  char line [120] ;
 
   (void)piGpioLayout () ;	// Call this first to make sure all's OK. Don't care about the result.
 
@@ -989,6 +994,7 @@ void piBoardId (int *model, int *rev, int *mem, int *maker, int *warranty)
     piGpioLayoutOops ("Bogus \"Revision\" line (no hex digit at start of revision)") ;
 
   revision = (unsigned int)strtol (c, NULL, 16) ; // Hex number with no leading 0x
+#endif
 
 // Check for new way:
 

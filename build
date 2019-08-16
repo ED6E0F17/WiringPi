@@ -175,7 +175,7 @@ fi
 # echo "Examples"
 # cd ../examples
 # make
-# cd ..
+cd ..
 
 echo
 echo All Done.
